@@ -14,5 +14,19 @@ class Solution:
 
         return self.longest
 
+    # TODO
     def expand_and_update(self, s, left, right):
-        pass
+        # expand as long as pointers are in bounds and characters match
+        while left >= 0 and right < len(s) and s[left] == s[right]:
+            left -= 1
+            right += 1
+
+        # extract the palindrome; use left and right before exit from while loop
+        current_palindrome = s[left + 1 : right]
+
+        # update the global maximum
+        if len(current_palindrome) > len(self.longest):
+            self.longest = current_palindrome
+
+sol = Solution()
+print(sol.longestPalindrome("babad"))
