@@ -22,11 +22,11 @@ class Solution:
             right += 1
 
         # extract the palindrome; use left and right before exit from while loop
-        current_palindrome = s[left + 1 : right]
+        # current_palindrome = s[left + 1 : right] this is slow
 
         # update the global maximum
-        if len(current_palindrome) > len(self.longest):
-            self.longest = current_palindrome
+        if (right - left -1) > len(self.longest):
+            self.longest = s[left+1 : right]
 
 sol = Solution()
 print(sol.longestPalindrome("babad"))
