@@ -6,23 +6,18 @@ given array of heights of bars, each bar width =1. return the area of largest re
 from typing import List
 
 
+# idea: use stack; If the current bar is smaller, pop the tall ones and calculate area
 def largest_rectangle(heights: List[int]) -> int:
     max_area = 0
-    n = len(heights)
-    for i in range(n):
-        curr_height = heights[i]
+    stack = []
 
-        # 1. expand to the left
-        left = i
-        while left > 0 and heights[left - 1] >= curr_height:
-            left -= 1
+    for i, curr_height in enumerate(heights):
+        while stack and heights[stack[-1]] > curr_height:
+            height = heights[stack.pop()]
 
-        # 2. exaand to the right
-        right = i
-        while right < n - 1 and heights[right + 1] >= curr_height:
-            right += 1
-
-        # 3. calculate area
-        width = left - right + 1
-        max_area = max(max_area, width * curr_height)
+            # what if stack is now empty?
+            width = i - stack[-1] - 1
+            max_area = max(max_area, height * width)
+        stack.append(i)
+    # what if loop is done but stack is not empty at the end, there are bars left?
     return max_area
