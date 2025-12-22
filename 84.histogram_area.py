@@ -15,9 +15,19 @@ def largest_rectangle(heights: List[int]) -> int:
         while stack and heights[stack[-1]] > curr_height:
             height = heights[stack.pop()]
 
-            # what if stack is now empty?
-            width = i - stack[-1] - 1
+            if not stack:
+                width = i  # extends from 0 to i
+            else:
+                width = i - stack[-1] - 1
             max_area = max(max_area, height * width)
         stack.append(i)
-    # what if loop is done but stack is not empty at the end, there are bars left?
+
+    # process remaining bars in the stack
+    while stack:
+        height = heights[stack.pop()]
+        if not stack:
+            width = len(heights)  # extend to the very end
+        else:
+            width = len(heights) - stack[-1] - 1
+        max_area = max(max_area, height * width)
     return max_area
