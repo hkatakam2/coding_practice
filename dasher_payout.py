@@ -143,3 +143,63 @@ def calculate_time_based_paayout(completed_deliveries, per_minute_rate, bonuse_f
         multiplier = 1 + (bonuse_factor * delivery["concurrent_count"])
         total += base_pay * multiplier
     return total
+
+
+"""Hacker rank single file version"""
+
+
+class Solution:
+    def calculatePayout(self, events: List[Dict[str, Any]], per_minute_rate: float, bonus_factor: float) -> float:
+        """
+        Calculates total Dasher payout based on minutes worked and concurrent active deliveries.
+        """
+        if not events:
+            return 0.0
+
+        # Step 1: Sort events chronologically using our helper method
+        events.sort(key=lambda x: self._time_to_minutes(x['time']))
+
+        active_count = 0
+        delivery_state = {}
+        total_payout = 0.0
+
+        # Step 2: Walk through the timeline
+        for event in events:
+            delivery_id = event['id']
+            status = event['status']
+            current_time = self._time_to_minutes(event['time'])
+
+            if status == 'accepted':
+                # Lock in the state at the exact moment of acceptance
+                delivery_state[delivery_id] = {
+                    'start_time': current_time,
+                    # Formula: 1 + (bonus_factor * concurrent_deliveries)
+                    'multiplier': 1 + (bonus_factor * active_count)
+                }
+                active_count += 1  # Now this order takes up capacity
+
+            elif status in ('delivered', 'cancelled'):
+                if delivery_id not in delivery_state:
+                    # Defensive programming: ignore completions for unknown orders
+                    continue
+
+                # Step 3: Calculate payout for this completed leg
+                start_time = delivery_state[delivery_id]['start_time']
+                duration_minutes = current_time - start_time
+                multiplier = delivery_state[delivery_id]['multiplier']
+
+                # Add to total payout
+                total_payout += (duration_minutes * per_minute_rate) * multiplier
+
+                # Free up the driver's capacity
+                active_count -= 1
+
+        return round(total_payout, 2)
+
+    def _time_to_minutes(self, time_str: str) -> int:
+        """
+        Helper method to convert 'HH:MM' string to total minutes since midnight.
+        This handles duration math much easier than native datetime objects in an interview.
+        """
+        hours, minutes = map(int, time_str.split(':'))
+        return (hours * 60) + minutes
