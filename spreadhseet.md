@@ -355,3 +355,53 @@ If `A` has an empty subscriber set, it is just sitting in the `self.subscribers`
 
 **3. DAG Depth Limits**
 Python has a default recursion limit (usually 1,000). If you have a spreadsheet where `Cell 1001` depends on `Cell 1000` which depends on `Cell 999` all the way down to `Cell 1`, your `_invalidate_downstream` recursive call will trigger a `RecursionError`. A production system would implement the traversal iteratively using an explicit `while` loop and a stack array instead of relying on the call stack.
+
+
+To permanently anchor these concepts and make them reusable for future interviews, you need to strip away the "Excel" wrapper and focus on the underlying architectural patterns. By isolating the fundamental mechanics, you master the 20% of system design concepts that will help you solve 80% of complex dependency problems.
+
+Here are your detailed notes and a strategic practice plan.
+
+---
+
+### Part 1: The Interview Cheat Sheet 
+*Copy these mental models into your notes.*
+
+#### 1. The Three-Tier State Model
+Whenever a problem asks you to maintain a system where "X depends on Y," immediately divide your data structures into three distinct states:
+* **The Output State:** The cached, final answers (e.g., `values` dictionary). Optimizes `get()` operations.
+* **The Blueprint State:** The rules or formulas defining a node (e.g., `formulas` dictionary). Used for *calculation*.
+* **The Relational State (Pub/Sub):** The reverse-lookup graph (e.g., `subscribers` dictionary). Used for *notification*. Maps a dependency to the nodes listening to it.
+
+#### 2. The Mutation Lifecycle (Teardown -> Build -> Ripple)
+Never mutate state directly without cleaning up first. If a node's definition changes, follow this exact sequence:
+1.  **Teardown:** Look at the old blueprint. Unsubscribe from old dependencies to prevent memory leaks and ghost updates.
+2.  **Build:** Save the new blueprint. Subscribe to the new dependencies.
+3.  **Ripple:** Trigger the update downstream.
+
+#### 3. The Multiplicity Rule (Idempotence)
+If Node A depends on Node B three times, **Notification $\neq$ Calculation**. 
+* **Notification:** Node B only needs to notify Node A *once* that a change occurred. Use a `Set` for subscribers to naturally handle duplicate registrations.
+* **Calculation:** Node A will look at its own blueprint and pull Node B's value three times during the math phase.
+
+#### 4. The Eager vs. Lazy Trade-off (The "Senior" Pivot)
+Always be ready to discuss *when* the math happens.
+* **Eager (Push):** Math happens during `set()`. `get()` is $O(1)$. Best for read-heavy systems (e.g., a dashboard viewed by millions but updated once a day).
+* **Lazy (Pull):** `set()` just marks nodes as `dirty`. Math happens recursively during `get()`. Best for write-heavy systems (e.g., financial modeling, UI frameworks where data mutates constantly before rendering).
+
+---
+
+### Part 2: How to Practice and Generalize
+
+To make these concepts stick, you need to move beyond just reading the code and actively stress-test your understanding.
+
+#### 1. The Feynman Technique (Teach It)
+The fastest way to expose gaps in your understanding of graph traversal and state management is to teach it. Take the concept of the "Lazy Ripple" (where you traverse a graph just to mark nodes as `dirty` without doing the math) and explain it to the computer science students you tutor. If you can break down the difference between Eager and Lazy evaluation to someone just learning Python dictionaries, you have mastered the concept.
+
+#### 2. Verbal Signposting 
+In complex data structure interviews, communication is graded just as heavily as the code. During your next prep session with your interview partner, have them ask you this exact question. Do not write any code for the first 10 minutes. Practice the "Signposting" technique: whiteboard the three dictionaries, explain the teardown/ripple lifecycle, and explicitly ask your peer, *"Does this architecture make sense before I implement the details?"*
+
+#### 3. Generalize to Other Problems
+This problem is fundamentally about Directed Acyclic Graphs (DAGs) and Topological Sorting. To build pattern recognition, immediately practice these variations:
+* **Leetcode 207 & 210 (Course Schedule I & II):** This tests your ability to detect cycles in a DAG. In the Excel problem, cycles are forbidden. Course Schedule teaches you the exact cycle-detection algorithm you would need to add to the Excel problem to make it production-ready.
+* **Leetcode 269 (Alien Dictionary):** This tests your ability to build a dependency graph from scratch based on implicit rules, and then traverse it. 
+* **Design a Build System (e.g., Make or Bazel):** If an interviewer asks you to design a system that compiles code, it is the exact same problem. Files are cells. Dependencies are formulas. If you change a `.c` file, the system must traverse the DAG to find and recompile only the executable files that depend on it.
