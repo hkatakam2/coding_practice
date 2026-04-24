@@ -27,3 +27,9 @@ def maxSubArray(nums: List[int]) -> int:
 
         return max(dp)
 ```
+## revise list
+- sorted rotated array; practice writing if else blocks
+- search in sorted rotated array; finding which half using lies in between logic
+
+- reversing linkedlist; only alter what is at the current step
+- cycle detection; run through an example to find bugs; standard test cases
