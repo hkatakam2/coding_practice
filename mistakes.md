@@ -33,3 +33,6 @@ def maxSubArray(nums: List[int]) -> int:
 
 - reversing linkedlist; only alter what is at the current step
 - cycle detection; run through an example to find bugs; standard test cases
+- merging two sorted lists; think about advancing my readers/writer for each step
+
+-group anagrams; initializing defaultdict, str is immutable, "".join(iterable) syntax
