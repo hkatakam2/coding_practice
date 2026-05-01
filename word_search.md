@@ -43,26 +43,39 @@ class Solution:
         rows, cols = len(board), len(board[0])
         visited = set()
 
-        # This is the "find_next" you were trying to write!
         def dfs(r, c, index):
-            # TODO 1: Base cases (Did we win? Are we out of bounds? Wrong letter? Already visited?)
+            # 1. Base Case: Success! We reached the end of the word.
+            if index == len(word):
+                return True
             
-            # TODO 2: Mark current cell as visited
+            # 2. Base Case: Failure (Out of bounds, wrong letter, or already visited)
+            if (r < 0 or r >= rows or 
+                c < 0 or c >= cols or 
+                board[r][c] != word[index] or 
+                (r, c) in visited):
+                return False
             
-            # TODO 3: Search all 4 directions recursively
+            # 3. Action: Add to current path's state
+            visited.add((r, c))
             
-            # TODO 4: BACKTRACK! Un-mark the cell so other paths can use it
+            # 4. Transition: Explore all 4 directions. 
+            # Notice how index+1 is passed. We aren't changing a global index!
+            res = (dfs(r + 1, c, index + 1) or 
+                   dfs(r - 1, c, index + 1) or 
+                   dfs(r, c + 1, index + 1) or 
+                   dfs(r, c - 1, index + 1))
             
-            # TODO 5: Return whether any of the 4 directions worked
-            pass
+            # 5. BACKTRACK: Undo the action. We are leaving this cell, 
+            # so remove it from the state so other branches can use it.
+            visited.remove((r, c))
+            
+            return res
 
-        # Start the process
         for r in range(rows):
             for c in range(cols):
-                # If we find the first letter, kick off the recursive search
-                if board[r][c] == word[0]:
-                    if dfs(r, c, 0):
-                        return True
-                        
+                # We don't even need `if board[r][c] == word[0]`, the DFS handles it!
+                if dfs(r, c, 0): 
+                    return True
+                    
         return False
 ```
