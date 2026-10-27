@@ -57,7 +57,7 @@ from collections import deque
 def shortest_steps(grid):
     starts = find_all(grid, START)
     if not starts: return -1
-    
+
     queue = deque(starts)
     seen = set(starts)
 
@@ -78,3 +78,29 @@ def shortest_steps(grid):
 
 
 ```
+
+Interviewer follow-up: multiple sources (Rotting Oranges)
+
+Me: The skeleton barely changes. I seed the queue with every source and drop the target check. The question becomes “how many rings until everything is reached?”
+
+```python
+def minutes_to_rot(grid):                    # 0 empty, 1 fresh, 2 rotten
+    queue = deque(find_all(grid, 2))         # all sources seeded at once
+    fresh = sum(row.count(1) for row in grid)
+    minutes = 0
+
+    while queue and fresh:                   # EDGE: no fresh oranges -> 0
+        for _ in range(len(queue)):
+            r, c = queue.popleft()
+            for dr, dc in DIRS:
+                nr, nc = r + dr, c + dc
+                if in_bounds(grid, nr, nc) and grid[nr][nc] == 1:
+                    grid[nr][nc] = 2         # marks visited; mutates the input
+                    fresh -= 1
+                    queue.append((nr, nc))
+        minutes += 1
+
+    return -1 if fresh else minutes          # EDGE: unreachable fresh oranges
+```
+
+Shortest Path to Get Food is the same as my main solution. It has a single start and the first # reached is the answer.
